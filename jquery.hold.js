@@ -8,23 +8,71 @@
 
     function Holder($) {
       this.$ = $;
+      this.queue = [];
+      this._refreshDefer();
+      this.defer.resolve();
     }
 
-    Holder.prototype.hold = function() {
+    Holder.prototype.hold = function(time) {
+      this.queue.push(['hold', time]);
+      this._trigger();
       return this;
     };
 
     Holder.prototype.fire = function(callback) {
-      callback();
+      this.queue.push(['fire', callback]);
+      this._trigger();
       return this;
+    };
+
+    Holder.prototype._refreshDefer = function() {
+      var that;
+      that = this;
+      this.defer = this.$.Deferred();
+      return this.defer.done(function() {
+        return that._processQueue();
+      });
+    };
+
+    Holder.prototype._trigger = function() {
+      var that;
+      that = this;
+      return setTimeout(function() {
+        return that._processQueue();
+      }, 1);
+    };
+
+    Holder.prototype._processQueue = function() {
+      var item, that;
+      that = this;
+      if (this.queue.length === 0) {
+        return;
+      }
+      if (this.defer.state() === 'pending') {
+        return;
+      }
+      item = this.queue.shift();
+      if (item[0] === 'hold') {
+        this._refreshDefer();
+        return setTimeout(function() {
+          return that.defer.resolve();
+        }, item[1] * 1000);
+      } else {
+        that._trigger();
+        return item[1]();
+      }
     };
 
     return Holder;
 
   })();
 
-  $.hold = function() {
-    return new Holder($);
+  $.hold = function(time) {
+    if (time) {
+      return new Holder($).hold(time);
+    } else {
+      return new Holder($);
+    }
   };
 
 }).call(this);
