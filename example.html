@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="./jquery.hold.js"></script>
+  <script>
+    jQuery(function($){
+      $.hold(1)
+        .fire(function() {
+          $("#foobar").text("1")
+        })
+        .hold(1)
+        .fire(function() {
+          $("#foobar").text("2")
+        })
+      });
+  </script>
+</head>
+<body>
+  <div id="foobar">Waiting</div>
+</body>
+</html>
